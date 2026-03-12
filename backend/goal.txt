@@ -1,0 +1,10 @@
+initialize a Node project
+add express jsonwebtoken as a dependency
+Create index.js
+Add route skeleton for userlogin,signup,purchase a course,add course content
+add middleware for users and admin auth
+Add a database(mongodb),use dotenv to store the database connecton string
+Define the Schema for user,admin,course,purchase
+Complete the routes for user login,signup purchase a course,see a course
+(Use express router forbetter structure your routes)
+Create the frontend
