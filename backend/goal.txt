@@ -8,3 +8,5 @@ Define the Schema for user,admin,course,purchase
 Complete the routes for user login,signup purchase a course,see a course
 (Use express router forbetter structure your routes)
 Create the frontend
+
+smaple course id - 69b6c11d11c65f2fcd4dd8b8

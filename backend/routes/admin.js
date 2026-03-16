@@ -1,8 +1,10 @@
 const {Router}=require('express');
 const {adminModel}=require('../models/Admin');
+const {courseModel}=require('../models/Course');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const dotenv=require('dotenv');
+const {adminMiddleware}=require('../middleware/admin');
 dotenv.config();
 const adminRouter=Router();
 adminRouter.post('/signup',async (req,res)=>{
@@ -47,21 +49,57 @@ adminRouter.post('/signin',async (req,res)=>{
             })
             return;
         }
-        const token=jwt.sign(user.password,process.env.JWT_ADMIN_SECRET);
+        //if we use the same jwt secret as of user forths then they will get the same jwt 
+        //and after the user willalso have access for the admin endpoints as they have same jwt
+        const token=jwt.sign({userId:user._id},process.env.JWT_ADMIN_SECRET);
         res.json({
             message:"admin signedin successfully",
             token:token
         })
     
 })
-adminRouter.post('/course',(req,res)=>{
+adminRouter.post('/addcourse',adminMiddleware,async (req,res)=>{
+    const adminId=req.userId;
+
+    const {title,description,imageUrl,price}=req.body;
+
+    //adding to the course model
+    
+     const Course=await courseModel.create({
+        title,
+        description,
+        imageUrl,
+        price,
+        creatorId:adminId
+     })
+    
     res.json({
-        message:"update course endpoint"
+        message:"Course is added",
+        CourseId:Course._id
     })
+
+
 })
-adminRouter.put('/course',(req,res)=>{
+adminRouter.put('/courseupdate',adminMiddleware,async (req,res)=>{
+    const adminId=req.userId;
+
+    const {title,description,imageUrl,price,courseId}=req.body;
+
+    //adding to the course model
+    //Here i HAVE to check whether this course id sent in the req body is created by the same admin or not
+    
+    const course=await courseModel.updateOne({
+        _id:courseId,
+        creatorId:adminId
+     },{
+        title,
+        description,
+        imageUrl,
+        price
+     }) 
     res.json({
-        message:"course endpoint"
+        message:"Course is updated",
+        CourseId:courseId
     })
 })
 module.exports={

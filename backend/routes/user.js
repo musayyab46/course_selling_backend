@@ -3,7 +3,10 @@ const dotenv=require('dotenv');
 const {Router}=require('express');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
+const {userMiddleware}=require('../middleware/user');
 const {userModel}=require("../models/User");
+const {purchaseModel}=require("../models/Purchases");
+const {courseModel}=require("../models/Course");
 dotenv.config();
 
 
@@ -51,15 +54,33 @@ userRouter.post("/signin",async (req,res)=>{
         })
         return;
     }
-    const token=jwt.sign(user.password,process.env.JWT_USER_SECRET);
+    const token=jwt.sign({userId:user._id},process.env.JWT_USER_SECRET);
     res.json({
         message:"user signedin successfully",
         token:token
     })
 })
-userRouter.get('/purchase',(req,res)=>{
+userRouter.get('/purchase',userMiddleware,async (req,res)=>{
+    const userId=req.userId;
+
+    const purchases=await purchaseModel.find({
+        userId
+    })
+    //alternative for mapping the purchase course
+    // let purchasedCourseIds=[];
+    // for(let i=0;i<purchases.length;i++){
+    //     purchasedCourseIds.push(purchases[i].courseId)
+    // }
+
+    //here purchases.map(x=>x.courseId) will provide array of ids but it
+    //cannotbe directly passed into the _id as it expects only a single id
+    const courseData=await courseModel.find({
+        _id:{ $in : purchases.map(x=>x.courseId)}
+    })
+    //this will provide all the courses that are purchased by the user
     res.json({
-        message:"purchase endpoint"
+        purchases,
+        courseData
     })
 })
 module.exports={
